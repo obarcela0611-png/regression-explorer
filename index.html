@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regression Explorer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>Regression Explorer</h1>
+    <p>Explore how machine learning models make predictions.</p>
+  </header>
+
+  <nav>
+    <button onclick="showSection('linear')">Push & Pull</button>
+    <button onclick="showSection('forest')">Wisdom of the Forest</button>
+    <button onclick="showSection('boosting')">One Correction at a Time</button>
+  </nav>
+
+  <main>
+    <section id="linear">
+      <h2>Push & Pull: Linear Regression</h2>
+      <p>Discover how individual features push predictions up or down.</p>
+    </section>
+
+    <section id="forest" hidden>
+      <h2>Wisdom of the Forest: Random Forest</h2>
+      <p>Explore how 100 decision trees combine their predictions.</p>
+    </section>
+
+    <section id="boosting" hidden>
+      <h2>One Correction at a Time: Gradient Boosting</h2>
+      <p>See how each new tree corrects previous prediction errors.</p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
