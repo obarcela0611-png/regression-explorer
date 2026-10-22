@@ -4,75 +4,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Regression Explorer</title>
-
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js" defer></script>
 </head>
-
 <body>
 
-  <header>
-    <h1>Regression Explorer</h1>
-    <p>
-      Explore how machine learning models make predictions.
-    </p>
-  </header>
+<header class="hero">
+  <p class="eyebrow">M10 • Interactive Machine Learning</p>
+  <h1>Regression Explorer</h1>
+  <p>Three models. Three different ways to make a prediction.</p>
+</header>
 
-  <nav>
-    <button onclick="showSection('linear')">
-      Push & Pull
-    </button>
+<nav aria-label="Model navigation">
+  <button onclick="showSection('linear')">Push & Pull</button>
+  <button onclick="showSection('forest')">Wisdom of the Forest</button>
+  <button onclick="showSection('boosting')">One Correction at a Time</button>
+</nav>
 
-    <button onclick="showSection('forest')">
-      Wisdom of the Forest
-    </button>
+<main>
 
-    <button onclick="showSection('boosting')">
-      One Correction at a Time
-    </button>
-  </nav>
+  <!-- LINEAR REGRESSION -->
+  <section id="linear">
+    <h2>Push & Pull</h2>
+    <p class="subtitle">How does each feature push a prediction up or down?</p>
+    <p>A linear regression model starts at the training average.
+       Each feature adds a positive or negative contribution.
+       Together, these pushes produce the final prediction.</p>
 
-  <main>
-
-    <!-- LINEAR REGRESSION -->
-    <section id="linear">
-
-      <h2>Push & Pull: Linear Regression</h2>
-
-      <p>
-        A linear regression model starts with an average
-        prediction. Each feature then pushes that
-        prediction up or down.
-
-        Explore how these pushes combine to create
-        a final prediction!
-      </p>
-
-      <div class="controls">
-
-        <label for="linearDataset">
-          Choose a dataset:
-        </label>
-
+    <div class="controls">
+      <label>Dataset
         <select id="linearDataset">
-          <option value="glucose">
-            Fasting Glucose
-          </option>
-
-          <option value="sbp">
-            Blood Pressure
-          </option>
-
-          <option value="fev1">
-            Lung Function (FEV1)
-          </option>
+          <option value="glucose">Fasting Glucose</option>
+          <option value="sbp">Blood Pressure</option>
+          <option value="fev1">Lung Function (FEV₁)</option>
         </select>
-
-        <label for="linearPerson">
-          Choose a person:
-        </label>
-
+      </label>
+      <label>Example person
         <select id="linearPerson">
           <option value="P1">Example person 1</option>
           <option value="P2">Example person 2</option>
@@ -80,65 +49,60 @@
           <option value="P4">Example person 4</option>
           <option value="P5">Example person 5</option>
         </select>
+      </label>
+    </div>
 
+    <div id="linearPersonDetails" class="info"></div>
+
+    <div class="metric-grid">
+      <div class="metric">
+        <span>Starting prediction</span>
+        <strong id="linearBaseline">—</strong>
       </div>
-
-      <div id="linearResults">
-
-        <h3>How is the prediction calculated?</h3>
-
-        <p>
-          Select a dataset and example person to explore
-          how individual features influence the prediction.
-        </p>
-
-        <div id="linearChart"></div>
-
-        <div id="linearExplanation"></div>
-
+      <div class="metric">
+        <span>Final prediction</span>
+        <strong id="linearPrediction">—</strong>
       </div>
+    </div>
 
-    </section>
+    <h3>Build the prediction</h3>
+    <p>Green contributions increase the prediction;
+       red contributions decrease it.</p>
+    <div id="linearChart"></div>
+    <div id="linearEquation" class="info"></div>
 
+    <h3>Experiment with feature values</h3>
+    <p>Change a value to see how the prediction responds.
+       Use Reset to return to the supplied example person.</p>
+    <div id="linearEditors" class="editor-grid"></div>
+    <button id="linearReset" class="action">Reset values</button>
 
-    <!-- RANDOM FOREST -->
-    <section id="forest" hidden>
+    <h3>Coefficient vs. individual contribution</h3>
+    <div id="linearCoefficient" class="info"></div>
 
-      <h2>Wisdom of the Forest: Random Forest</h2>
+    <h3>What does this mean?</h3>
+    <div id="linearExplanation" class="info"></div>
+  </section>
 
-      <p>
-        A random forest combines predictions from
-        100 different decision trees.
+  <!-- RANDOM FOREST -->
+  <section id="forest" hidden>
+    <h2>Wisdom of the Forest</h2>
+    <p class="subtitle">How do 100 different trees combine into one prediction?</p>
+    <p>Each tree learns from its own bootstrap sample of training people
+       and considers only some features at each split.
+       The forest averages all 100 predictions.</p>
 
-        Explore how individual trees make predictions
-        and how averaging their results creates
-        the forest's final prediction.
-      </p>
-
-    </section>
-
-
-    <!-- GRADIENT BOOSTING -->
-    <section id="boosting" hidden>
-
-      <h2>One Correction at a Time: Gradient Boosting</h2>
-
-      <p>
-        Gradient boosting starts with an average prediction.
-
-        Each new tree makes a small correction to
-        the previous prediction.
-
-        Explore how these corrections improve the model
-        and how validation error helps determine
-        when to stop.
-      </p>
-
-    </section>
-
-  </main>
-
-  <script src="script.js"></script>
-
-</body>
-</html>
+    <div class="controls">
+      <label>Dataset
+        <select id="forestDataset">
+          <option value="glucose">Fasting Glucose</option>
+          <option value="sbp">Blood Pressure</option>
+          <option value="fev1">Lung Function (FEV₁)</option>
+        </select>
+      </label>
+      <label>Example person
+        <select id="forestPerson">
+          <option value="P1">Example person 1</option>
+          <option value="P2">Example person 2</option>
+          <option value="P3">Example person 3</option>
+          <option value="P4">Example person
