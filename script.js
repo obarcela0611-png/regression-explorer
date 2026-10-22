@@ -1,114 +1,114 @@
 
-function showSection(sectionId) {
-  document.querySelectorAll("main section").forEach(function(section) {
-    section.hidden = section.id !== sectionId;
-  });
+"use strict";
+
+// Regression Explorer
+// Uses the professor's supplied model outputs.
+
+const datasets = {};
+const charts = {};
+
+function byId(id) {
+  return document.getElementById(id);
 }
 
-// Store the selected dataset
-let linearData = null;
+function format(number, digits = 1) {
+  return Number(number).toFixed(digits);
+}
 
-async function loadLinearData() {
-  const dataset = document.getElementById("linearDataset").value;
+function signed(number, digits = 1) {
+  return (number >= 0 ? "+" : "") + format(number, digits);
+}
 
-  try {
-    const response = await fetch("./" + dataset + ".json");
+function valueWithUnits(value, units) {
+  return format(value) + " " + units;
+}
+
+function showSection(sectionId) {
+  document.querySelectorAll("main section").forEach(section => {
+    section.hidden = section.id !== sectionId;
+  });
+
+  document.querySelectorAll("nav button").forEach(button => {
+    const active = button.getAttribute("onclick")
+      ?.includes("'" + sectionId + "'");
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+
+  Object.values(charts).forEach(chart => chart.resize());
+}
+
+async function getData(name) {
+  if (!datasets[name]) {
+    const response = await fetch("./" + name + ".json");
 
     if (!response.ok) {
-      throw new Error("Could not load dataset");
+      throw new Error("Unable to load " + name + ".json");
     }
 
-    linearData = await response.json();
-    updateLinearPrediction();
+    datasets[name] = await response.json();
+  }
 
+  return datasets[name];
+}
+
+function getPerson(data, id) {
+  return data.people.find(person => person.id === id);
+}
+
+function featureLabel(data, key) {
+  const feature = data.features.find(f => f.name === key);
+  return feature ? feature.label : key.replaceAll("_", " ");
+}
+
+function personDetails(data, person) {
+  return "<strong>" + person.label + "</strong> — " +
+    person.description +
+    "<p>Observed value: " +
+    valueWithUnits(person.observed, data.units) +
+    ". This is the actual measured outcome, not the prediction.</p>";
+}
+
+function showError(elementId, error) {
+  byId(elementId).textContent = "Error: " + error.message;
+}
+
+// ----------------------------------
+// 1. PUSH & PULL
+// ----------------------------------
+
+let linearData;
+let linearValues = {};
+
+async function loadLinear() {
+  try {
+    linearData = await getData(byId("linearDataset").value);
+    resetLinear();
   } catch (error) {
-    document.getElementById("linearChart").textContent =
-      "Error loading data: " + error.message;
+    showError("linearExplanation", error);
   }
 }
 
-function updateLinearPrediction() {
+function resetLinear() {
   if (!linearData) return;
 
-  const personId = document.getElementById("linearPerson").value;
-  const person = linearData.people.find(p => p.id === personId);
-  const result = linearData.linear.people[personId];
+  const person = getPerson(linearData, byId("linearPerson").value);
+  linearValues = { ...person.values };
 
-  const baseline = linearData.linear.baseline;
-  const prediction = result.prediction;
-  const pushes = result.grouped_pushes;
-  const units = linearData.units;
-
-  const chart = document.getElementById("linearChart");
-  chart.innerHTML = "";
-
-  const heading = document.createElement("h3");
-  heading.textContent = person.label + " — " + person.description;
-  chart.appendChild(heading);
-
-  const start = document.createElement("p");
-  start.textContent =
-    "Starting prediction: " + baseline.toFixed(1) + " " + units;
-  chart.appendChild(start);
-
-  const featureNames = {
-    hba1c: "HbA1c",
-    age: "Age",
-    bmi: "BMI",
-    waist_cm: "Waist circumference",
-    sex: "Sex",
-    ethnicity: "Ethnicity"
-  };
-
-  Object.entries(pushes).forEach(([feature, value]) => {
-    const row = document.createElement("div");
-    row.style.marginBottom = "15px";
-
-    const label = document.createElement("p");
-    const direction = value >= 0 ? "↑" : "↓";
-    const sign = value >= 0 ? "+" : "";
-
-    label.textContent =
-      (featureNames[feature] || feature) +
-      ": " + direction + " " +
-      sign + value.toFixed(1) + " " + units;
-
-    const bar = document.createElement("div");
-    bar.style.height = "18px";
-    bar.style.borderRadius = "6px";
-    bar.style.width =
-      Math.max(2, Math.min(100, Math.abs(value) * 2)) + "%";
-    bar.style.backgroundColor =
-      value >= 0 ? "#16a34a" : "#dc2626";
-
-    row.appendChild(label);
-    row.appendChild(bar);
-    chart.appendChild(row);
-  });
-
-  const finalPrediction = document.createElement("h3");
-  finalPrediction.textContent =
-    "Final prediction: " + prediction.toFixed(1) + " " + units;
-
-  chart.appendChild(finalPrediction);
-
-  const explanation = document.getElementById("linearExplanation");
-
-  explanation.textContent =
-    "The model begins at " + baseline.toFixed(1) + " " + units +
-    ". Each feature contributes a positive or negative push. " +
-    "Adding all the pushes produces the final prediction of " +
-    prediction.toFixed(1) + " " + units +
-    ". These contributions describe model associations, not causes.";
+  buildLinearEditors();
+  updateLinear();
 }
 
-// Connect the dropdown menus
-document.getElementById("linearDataset")
-  .addEventListener("change", loadLinearData);
+function buildLinearEditors() {
+  const container = byId("linearEditors");
+  container.innerHTML = "";
 
-document.getElementById("linearPerson")
-  .addEventListener("change", updateLinearPrediction);
+  linearData.features.forEach(feature => {
+    const label = document.createElement("label");
+    label.textContent = feature.label;
 
-// Start the website
-showSection("linear");
-loadLinearData();
+    if (feature.binary) {
+      const select = document.createElement("select");
+
+      [0, 1].forEach(value => {
+        const option = document.createElement("option");
+        option.value = value
