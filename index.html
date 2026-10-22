@@ -4,11 +4,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Regression Explorer</title>
+
   <link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js" defer></script>
 </head>
+
 <body>
 
 <header class="hero">
@@ -18,30 +22,50 @@
 </header>
 
 <nav aria-label="Model navigation">
-  <button onclick="showSection('linear')">Push & Pull</button>
-  <button onclick="showSection('forest')">Wisdom of the Forest</button>
-  <button onclick="showSection('boosting')">One Correction at a Time</button>
+  <button onclick="showSection('linear')">
+    Push & Pull
+  </button>
+
+  <button onclick="showSection('forest')">
+    Wisdom of the Forest
+  </button>
+
+  <button onclick="showSection('boosting')">
+    One Correction at a Time
+  </button>
 </nav>
 
 <main>
 
-  <!-- LINEAR REGRESSION -->
+  <!-- PUSH & PULL -->
+
   <section id="linear">
+
     <h2>Push & Pull</h2>
-    <p class="subtitle">How does each feature push a prediction up or down?</p>
-    <p>A linear regression model starts at the training average.
-       Each feature adds a positive or negative contribution.
-       Together, these pushes produce the final prediction.</p>
+
+    <p class="subtitle">
+      How does each feature push a prediction up or down?
+    </p>
+
+    <p>
+      A linear regression model starts at the training average.
+      Each feature adds a positive or negative contribution.
+      Together, these pushes produce the final prediction.
+    </p>
 
     <div class="controls">
-      <label>Dataset
+
+      <label>
+        Dataset
         <select id="linearDataset">
           <option value="glucose">Fasting Glucose</option>
           <option value="sbp">Blood Pressure</option>
-          <option value="fev1">Lung Function (FEV₁)</option>
+          <option value="fev1">Lung Function (FEV1)</option>
         </select>
       </label>
-      <label>Example person
+
+      <label>
+        Example person
         <select id="linearPerson">
           <option value="P1">Example person 1</option>
           <option value="P2">Example person 2</option>
@@ -50,59 +74,300 @@
           <option value="P5">Example person 5</option>
         </select>
       </label>
+
     </div>
 
     <div id="linearPersonDetails" class="info"></div>
 
     <div class="metric-grid">
+
       <div class="metric">
         <span>Starting prediction</span>
         <strong id="linearBaseline">—</strong>
       </div>
+
       <div class="metric">
         <span>Final prediction</span>
         <strong id="linearPrediction">—</strong>
       </div>
+
     </div>
 
     <h3>Build the prediction</h3>
-    <p>Green contributions increase the prediction;
-       red contributions decrease it.</p>
+
+    <p>
+      Green contributions increase the prediction;
+      red contributions decrease it.
+    </p>
+
     <div id="linearChart"></div>
+
     <div id="linearEquation" class="info"></div>
 
     <h3>Experiment with feature values</h3>
-    <p>Change a value to see how the prediction responds.
-       Use Reset to return to the supplied example person.</p>
+
+    <p>
+      Change a value to see how the prediction responds.
+      Use Reset to return to the supplied example person.
+    </p>
+
     <div id="linearEditors" class="editor-grid"></div>
-    <button id="linearReset" class="action">Reset values</button>
+
+    <button id="linearReset" class="action">
+      Reset values
+    </button>
 
     <h3>Coefficient vs. individual contribution</h3>
+
     <div id="linearCoefficient" class="info"></div>
 
     <h3>What does this mean?</h3>
+
     <div id="linearExplanation" class="info"></div>
+
   </section>
 
-  <!-- RANDOM FOREST -->
+
+  <!-- WISDOM OF THE FOREST -->
+
   <section id="forest" hidden>
+
     <h2>Wisdom of the Forest</h2>
-    <p class="subtitle">How do 100 different trees combine into one prediction?</p>
-    <p>Each tree learns from its own bootstrap sample of training people
-       and considers only some features at each split.
-       The forest averages all 100 predictions.</p>
+
+    <p class="subtitle">
+      How do 100 different trees combine into one prediction?
+    </p>
+
+    <p>
+      Each tree learns from its own bootstrap sample of
+      training people and considers only some features
+      at each split. The forest averages all 100 predictions.
+    </p>
 
     <div class="controls">
-      <label>Dataset
+
+      <label>
+        Dataset
         <select id="forestDataset">
           <option value="glucose">Fasting Glucose</option>
           <option value="sbp">Blood Pressure</option>
-          <option value="fev1">Lung Function (FEV₁)</option>
+          <option value="fev1">Lung Function (FEV1)</option>
         </select>
       </label>
-      <label>Example person
+
+      <label>
+        Example person
         <select id="forestPerson">
           <option value="P1">Example person 1</option>
           <option value="P2">Example person 2</option>
           <option value="P3">Example person 3</option>
-          <option value="P4">Example person
+          <option value="P4">Example person 4</option>
+          <option value="P5">Example person 5</option>
+        </select>
+      </label>
+
+    </div>
+
+    <div id="forestPersonDetails" class="info"></div>
+
+    <div class="metric-grid">
+
+      <div class="metric">
+        <span>Tree 1 prediction</span>
+        <strong id="forestTreeOne">—</strong>
+      </div>
+
+      <div class="metric">
+        <span>Average of all 100 trees</span>
+        <strong id="forestFullPrediction">—</strong>
+      </div>
+
+    </div>
+
+    <h3>Build your forest</h3>
+
+    <label for="forestCount">
+      Number of trees included:
+      <strong id="forestCountLabel">100</strong>
+    </label>
+
+    <input
+      id="forestCount"
+      type="range"
+      min="1"
+      max="100"
+      value="100"
+    >
+
+    <p id="forestStatus"></p>
+
+    <div class="metric">
+      <span>Running average</span>
+      <strong id="forestRunningAverage">—</strong>
+    </div>
+
+    <h3>Watch the average settle</h3>
+
+    <div class="chart-container">
+      <canvas id="forestRunningChart"></canvas>
+    </div>
+
+    <h3>Individual tree predictions</h3>
+
+    <div class="chart-container">
+      <canvas id="forestTreesChart"></canvas>
+    </div>
+
+    <h3>Why do the trees disagree?</h3>
+
+    <div id="forestExplanation" class="info"></div>
+
+  </section>
+
+
+  <!-- GRADIENT BOOSTING -->
+
+  <section id="boosting" hidden>
+
+    <h2>One Correction at a Time</h2>
+
+    <p class="subtitle">
+      How does each new tree improve the model?
+    </p>
+
+    <p>
+      Gradient boosting starts at the training average.
+      Each new tree learns from the remaining training
+      errors and makes a small correction to the prediction.
+    </p>
+
+    <div class="controls">
+
+      <label>
+        Dataset
+        <select id="boostingDataset">
+          <option value="glucose">Fasting Glucose</option>
+          <option value="sbp">Blood Pressure</option>
+          <option value="fev1">Lung Function (FEV1)</option>
+        </select>
+      </label>
+
+      <label>
+        Example person
+        <select id="boostingPerson">
+          <option value="P1">Example person 1</option>
+          <option value="P2">Example person 2</option>
+          <option value="P3">Example person 3</option>
+          <option value="P4">Example person 4</option>
+          <option value="P5">Example person 5</option>
+        </select>
+      </label>
+
+    </div>
+
+    <div id="boostingPersonDetails" class="info"></div>
+
+    <div class="metric-grid">
+
+      <div class="metric">
+        <span>Round 0 — training average</span>
+        <strong id="boostingBaseline">—</strong>
+      </div>
+
+      <div class="metric">
+        <span>Round 500 prediction</span>
+        <strong id="boostingFinal">—</strong>
+      </div>
+
+    </div>
+
+    <h3>Follow the corrections</h3>
+
+    <label for="boostingRound">
+      Current round:
+      <strong id="boostingRoundLabel">0</strong>
+    </label>
+
+    <input
+      id="boostingRound"
+      type="range"
+      min="0"
+      max="500"
+      value="0"
+    >
+
+    <div class="button-row">
+
+      <button id="boostingPrevious" class="action">
+        Previous round
+      </button>
+
+      <button id="boostingNext" class="action">
+        Next round
+      </button>
+
+    </div>
+
+    <div class="metric-grid three">
+
+      <div class="metric">
+        <span>Previous prediction</span>
+        <strong id="boostingPreviousValue">—</strong>
+      </div>
+
+      <div class="metric">
+        <span>New correction</span>
+        <strong id="boostingCorrection">—</strong>
+      </div>
+
+      <div class="metric">
+        <span>Updated prediction</span>
+        <strong id="boostingCurrentValue">—</strong>
+      </div>
+
+    </div>
+
+    <h3>Training vs. validation error</h3>
+
+    <p>
+      RMSE measures typical prediction error in the
+      target's units. Lower values indicate smaller errors.
+    </p>
+
+    <div class="chart-container">
+      <canvas id="boostingErrorChart"></canvas>
+    </div>
+
+    <h3>Choose when to stop</h3>
+
+    <label for="boostingStop">
+      Your stopping round:
+      <strong id="boostingStopLabel">21</strong>
+    </label>
+
+    <input
+      id="boostingStop"
+      type="range"
+      min="0"
+      max="500"
+      value="21"
+    >
+
+    <div id="boostingComparison" class="info"></div>
+
+    <h3>Why not just train for 500 rounds?</h3>
+
+    <div id="boostingExplanation" class="info"></div>
+
+  </section>
+
+</main>
+
+<footer>
+  <p>Regression Explorer • NHANES public-use data</p>
+  <p>Model outputs supplied for the M10 regression activity.</p>
+  <p>Predictions describe model associations, not causal effects.</p>
+</footer>
+
+</body>
+</html>
